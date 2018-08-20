@@ -12,12 +12,29 @@ class Particular
                             :pm1_0_standard, :pm2_5_standard, :pm10_standard,
                             :pm1_0_env,      :pm2_5_env,
                             :concentration_unit,
+
+                            # These fields are "number of particles beyond N um
+                            # per 0.1L of air". These numbers are multiplied by
+                            # 10, so 03um == "number of particles beyond 0.3um
+                            # in 0.1L of air"
                             :particle_03um,   :particle_05um,   :particle_10um,
                             :particle_25um,   :particle_50um,   :particle_100um)
     def for_json
       to_h.tap do |hash|
-        hash[:time] = hash[:time].strftime("%FT%T.%L%:z")
+        hash[:time] = format_time(hash[:time])
       end
+    end
+
+    def for_csv
+      list = to_a
+      list[0] = format_time(list[0])
+      list
+    end
+
+    private
+
+    def format_time time
+      time.strftime("%FT%T.%L%:z")
     end
   end
 
@@ -85,14 +102,17 @@ class Particular
 end
 
 if __FILE__ == $0
-  Particular::WebServer.start ARGV[0]
-  # require 'csv'
-  # client = Particular.new ARGV[0]
-  # CSV do |csv|
-  #   csv << Particular::Sample.members
-  #   while data = client.read
-  #     csv << data.to_a
-  #     $stdout.flush
-  #   end
-  # end
+  #Particular::WebServer.start ARGV[0]
+  require 'csv'
+  client = Particular.new ARGV[0]
+  CSV.open(ARGV[1], "w") do |csv|
+    csv << Particular::Sample.members
+    p Particular::Sample.members
+    while data = client.read
+      csv << data.for_csv
+      p data.for_csv
+      $stdout.flush
+      csv.flush
+    end
+  end
 end

@@ -1,47 +1,32 @@
 <html>
   <head>
-    <link href='https://cdnjs.cloudflare.com/ajax/libs/metrics-graphics/2.11.0/metricsgraphics.css' rel='stylesheet' type='text/css'>
     <link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
 
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js'></script>
     <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js'></script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/metrics-graphics/2.11.0/metricsgraphics.js'></script>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
   <script>
     var particle_03um = [];
     var particle_05um = [];
 
     $(function() {
+      var arrayLength = 30
+var newArray = []
+
+Plotly.plot('graph', [{
+  y: [],
+  mode: 'lines',
+  line: {color: '#80CAF6'}
+}]);
+
       var source = new EventSource('/samples');
       var timeParser = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L%Z");
-      source.addEventListener('message', function(e) {
-        var data = JSON.parse(e.data);
-        // data.a_time = Date.parse(data.time);
+      var data = [
+        { label: 'Layer 1', values: [ {x: 0, y: 0}, {x: 1, y: 1}, {x: 2, y: 2} ] },
+        { label: 'Layer 2', values: [ {x: 0, y: 0}, {x: 1, y: 1}, {x: 2, y: 4} ] }
+      ];
 
-        data.a_time = timeParser(data.time);
-        particle_03um.push({ date: data.a_time, value: data.particle_03um });
-        particle_05um.push({ date: data.a_time, value: data.particle_05um });
-
-        while(particle_03um.length > 3600) {
-          particle_03um.shift();
-        }
-
-        while(particle_05um.length > 3600) {
-          particle_05um.shift();
-        }
-
-        MG.data_graphic({
-          title: "Multi-Line Chart",
-          description: "This line chart contains multiple lines.",
-          data: [ particle_03um, particle_05um ],
-          width: 1024,
-          height: 512,
-          right: 40,
-          target: '#particle-graph',
-          legend: ['Line 1','Line 2'],
-          legend_target: '.legend'
-        });
-      }, false);
     });
   </script>
   <body>
@@ -50,7 +35,7 @@
 
       <div class="row">
         <div class="col-xs-8 text-center">
-          <div id='particle-graph'></div>
+          <div id='graph'></div>
         </div>
       </div>
     </div>
